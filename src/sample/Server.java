@@ -6,7 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
 
-public class Server {
+public class Server implements Runnable {
 
     Controller controller;
     ServerSocket server;
@@ -18,36 +18,46 @@ public class Server {
         this.controller = control;
 
 
-
     }
 
-    public void run(){
+    public void run() {
 
         try {
             server = new ServerSocket(1337);
             socket = server.accept();
             in = new ObjectInputStream(socket.getInputStream());
             out = new ObjectOutputStream(socket.getOutputStream());
-            controller.textArea.appendText("Client Connected: " + new Date().toString());
+            controller.textArea.appendText("Client Connected: " + new Date().toString() + "\n");
 
+            while (true) {
 
+                Object object = in.readObject();
+                if(object == null){
+                    break;
+                }
+                if (object.getClass() == Loan.class) {
+                    double totalPayment = ((Loan) object).getAmount() * Math.pow(1 + ((Loan) object).getRate() / 100, ((Loan) object).getYears());
+                    double monthlyPayment = totalPayment / (12 * ((Loan) object).getYears());
+                    ((Loan) object).setTotalPayment(totalPayment);
+                    ((Loan) object).setMonthlyPayment(monthlyPayment);
+                    controller.textArea.appendText("Annual interest rate: " + ((Loan) object).getRate() + "\n"
+                            + "Number of Years: " + ((Loan) object).getYears() + "\n"
+                            + "Loan Amount: " + ((Loan) object).getAmount() + "\n"
+                            + "Monthly Payment: " + ((Loan) object).getMonthlyPayment() + "\n"
+                            + "Total Payment: " + ((Loan) object).getTotalPayment());
 
-            Object object = in.readObject();
-            if(object.getClass() == Loan.class){
-                double totalPayment = ((Loan)object).getAmount()* Math.pow(1+((Loan)object).getRate()/100,((Loan)object).getYears());
-                double monthlyPayment = totalPayment/(12*((Loan)object).getYears());
-                ((Loan)object).setTotalPayment(totalPayment);
-                ((Loan)object).setMonthlyPayment(monthlyPayment);
-                controller.textArea.appendText("Annual interest rate: "+ ((Loan)object).getRate()+ "\n"
-                                                +"Number of Years: "+ ((Loan)object).getYears()+"\n"
-                                                + "Loan Amount: " + ((Loan)object).getAmount()+ "\n"
-                                                + "Monthly Payment: " + ((Loan)object).getMonthlyPayment() + "\n"
-                                                + "Total Payment: " + ((Loan)object).getTotalPayment());
+                    out.writeObject(object);
+                    out.flush();
 
-                out.writeObject(object);
-
+                } else {
+                    break;
+                }
             }
 
+            in.close();
+            out.close();
+            socket.close();
+            server.close();
 
 
         } catch (IOException e) {

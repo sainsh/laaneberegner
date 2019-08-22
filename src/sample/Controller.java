@@ -15,13 +15,13 @@ public class Controller {
     Server server;
 
     @FXML
-    public void initialize(){
+    public void initialize() {
         server = new Server(this);
 
     }
 
     public void onClick(ActionEvent actionEvent) {
-        textArea.setText("Server Started: " + new Date().toString());
-        server.run();
+        textArea.setText("Server Started: " + new Date().toString() + "\n");
+        (new Thread(new Server(this))).start();
     }
 }
