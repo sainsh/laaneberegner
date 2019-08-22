@@ -25,8 +25,8 @@ public class Server implements Runnable {
         try {
             server = new ServerSocket(1337);
             socket = server.accept();
-            in = new ObjectInputStream(socket.getInputStream());
             out = new ObjectOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
             controller.textArea.appendText("Client Connected: " + new Date().toString() + "\n");
 
             while (true) {
