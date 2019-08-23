@@ -29,12 +29,10 @@ public class Server implements Runnable {
             in = new ObjectInputStream(socket.getInputStream());
             controller.textArea.appendText("Client Connected: " + new Date().toString() + "\n");
 
-            while (true) {
+
 
                 Object object = in.readObject();
-                if(object == null){
-                    break;
-                }
+
                 if (object.getClass() == Loan.class) {
                     double totalPayment = ((Loan) object).getAmount() * Math.pow(1 + ((Loan) object).getRate() / 100, ((Loan) object).getYears());
                     double monthlyPayment = totalPayment / (12 * ((Loan) object).getYears());
@@ -49,10 +47,7 @@ public class Server implements Runnable {
                     out.writeObject(object);
                     out.flush();
 
-                } else {
-                    break;
                 }
-            }
 
             in.close();
             out.close();
